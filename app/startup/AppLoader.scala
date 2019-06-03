@@ -25,14 +25,15 @@ class StartupModule(context: ApplicationLoader.Context) extends BuiltInComponent
   val httpFilters: Seq[EssentialFilter] =
     Seq.empty
 
-  lazy val store          = new AsyncKeyValueStore[UUID, JsValue]()
-  lazy val userDatabase   = new JsonKeyValueStore[Future, UUID, User](store)
-  lazy val userService    = new GenericUserService(userDatabase)
-  lazy val userController = new UserController(controllerComponents, userService)
+  lazy val userDatabase     = new JsonKeyValueStore[Future, UUID, User](new AsyncKeyValueStore[UUID, JsValue]())
+  lazy val passwordDatabase = new AsyncKeyValueStore[String, String]()
+  lazy val userService      = new GenericUserService(userDatabase)
+  lazy val passwordService  = new GenericPasswordService(passwordDatabase)
+  lazy val appController    = new AppController(controllerComponents, userService, passwordService)
 
   val router: Router = new Routes(
     httpErrorHandler,
-    userController,
+    appController,
     prefix = ""
   )
 }

@@ -2,23 +2,12 @@ package models
 
 import java.util.UUID
 
-case class UserUpdate(
-  username: String,
-  name: String,
-) {
+case class UserUpdate(username: String) {
   def createUser(id: UUID): User =
-    User(
-      username = username,
-      name     = name,
-      id       = id,
-    )
+    User(username = username, id = id)
 
   def updateUser(user: User): User =
-    User(
-      username = username,
-      name     = name,
-      id       = user.id,
-    )
+    User(username = username, id = user.id)
 }
 
 object UserUpdate {
