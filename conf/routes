@@ -1,0 +1,4 @@
+POST   /user     controllers.UserController.create
+GET    /user/:id controllers.UserController.read(id: UUID)
+PUT    /user/:id controllers.UserController.update(id: UUID)
+DELETE /user/:id controllers.UserController.delete(id: UUID)
