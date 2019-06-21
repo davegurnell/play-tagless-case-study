@@ -1,13 +1,11 @@
 package controllers
 
-import cats.implicits._
 import org.scalatest.{Matchers, WordSpec}
-import play.api.mvc.{AnyContent, BodyParsers, Request, Results}
-import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits, Helpers}
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.{AnyContent, Request, Results}
+import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
 import services.{BasicAuth, InMemoryPasswordStore, PasswordStore}
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 //noinspection TypeAnnotation
 class AuthActionSpec extends WordSpec with Matchers with FutureAwaits with DefaultAwaitTimeout {
@@ -42,16 +40,19 @@ class AuthActionSpec extends WordSpec with Matchers with FutureAwaits with Defau
   }
 }
 
+//noinspection TypeAnnotation
 class AppControllerMocks {
+
   val passwords: Map[String, String] =
     Map("user1" -> "pass1", "user2" -> "pass2")
 
-  lazy val passwordStore: PasswordStore[Future] =
-    new InMemoryPasswordStore[Future](passwords)
+  lazy val passwordStore: PasswordStore =
+    new InMemoryPasswordStore(passwords)
 
-  lazy val controller: AppController = {
-    val bodyParser = BodyParsers.utils.ignore[AnyContent](AnyContent())
-    val authAction = new AuthAction(bodyParser, passwordStore)
-    new AppController(Helpers.stubControllerComponents(), authAction)
-  }
+  val injector = new GuiceApplicationBuilder()
+    .overrides(bind[PasswordStore].toInstance(passwordStore))
+    .injector()
+
+  lazy val controller: AppController =
+    injector.instanceOf[AppController]
 }

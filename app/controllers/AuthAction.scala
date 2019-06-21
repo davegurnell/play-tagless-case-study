@@ -2,14 +2,15 @@ package controllers
 
 import cats.data.OptionT
 import cats.implicits._
+import javax.inject.Inject
 import play.api.mvc._
 import services.{BasicAuth, PasswordStore}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthAction(
-  val parser: BodyParser[AnyContent],
-  val passwordStore: PasswordStore[Future]
+class AuthAction @Inject() (
+  val parser: BodyParsers.Default,
+  val passwordStore: PasswordStore
 )(
   implicit val executionContext: ExecutionContext
 ) extends ActionBuilder[AuthRequest, AnyContent] with ActionRefiner[Request, AuthRequest] {

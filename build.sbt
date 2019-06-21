@@ -33,6 +33,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
+  guice,
   "org.typelevel"          %% "cats-core"          % "1.4.0",
   "com.github.etaty"       %% "rediscala"          % "1.8.0",
   "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test,
