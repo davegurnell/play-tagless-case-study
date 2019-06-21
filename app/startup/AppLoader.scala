@@ -1,22 +1,29 @@
 package startup
 
-import controllers._
-import database._
-import models._
-import services._
-import router.Routes
-
 import cats.implicits._
-import java.util.UUID
-import play.api.libs.json._
-import play.api.mvc.EssentialFilter
+import controllers._
+import play.api.mvc.{BodyParsers, EssentialFilter}
 import play.api.routing.Router
 import play.api.{Application, ApplicationLoader, BuiltInComponentsFromContext}
-import scala.concurrent._
+import router.Routes
+import services._
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 class AppLoader extends ApplicationLoader {
   def load(context: ApplicationLoader.Context): Application = {
+    val passwords: Map[String, String] =
+      Map(
+        "garfield"    -> "iheartlasagne",
+        "grumpycat"   -> "nope",
+        "snagglepuss" -> "murgatroyd",
+      )
+
     val module = new StartupModule(context)
+
+    module.init(passwords)
+
     module.application
   }
 }
@@ -25,15 +32,17 @@ class StartupModule(context: ApplicationLoader.Context) extends BuiltInComponent
   val httpFilters: Seq[EssentialFilter] =
     Seq.empty
 
-  lazy val userDatabase     = new JsonKeyValueStore[Future, UUID, User](new AsyncKeyValueStore[UUID, JsValue]())
-  lazy val passwordDatabase = new AsyncKeyValueStore[String, String]()
-  lazy val userService      = new GenericUserService(userDatabase)
-  lazy val passwordService  = new GenericPasswordService(passwordDatabase)
-  lazy val appController    = new AppController(controllerComponents, userService, passwordService)
+  lazy val passwordStore = new InMemoryPasswordStore[Future]()
+  lazy val bodyParser    = new BodyParsers.Default(playBodyParsers)
+  lazy val authAction    = new AuthAction(bodyParser, passwordStore)
+  lazy val appController = new AppController(controllerComponents, authAction)
 
   val router: Router = new Routes(
     httpErrorHandler,
     appController,
     prefix = ""
   )
+
+  def init(passwords: Map[String, String]): Unit =
+    Await.result(passwordStore.init(passwords), Duration.Inf)
 }

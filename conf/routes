@@ -1,6 +1,1 @@
-POST   /user           controllers.AppController.createUser
-GET    /user/:id       controllers.AppController.readUser(id: UUID)
-PUT    /user/:id       controllers.AppController.updateUser(id: UUID)
-DELETE /user/:id       controllers.AppController.deleteUser(id: UUID)
-DELETE /auth/login/:id controllers.AppController.checkPassword(id: UUID)
-DELETE /aurh/reset/:id controllers.AppController.resetPassword(id: UUID)
+GET /go controllers.AppController.index()
