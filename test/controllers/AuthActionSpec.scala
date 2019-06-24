@@ -54,6 +54,9 @@ class AppControllerMocks {
     new InMemoryPasswordStore[Future](passwords)
 
   val injector = new GuiceApplicationBuilder()
+    // We can't use the `bind` DSL from play.api.inject
+    // because it doesn't support Guice TypeLiterals,
+    // so we create an `AbstractModule` and wire that instead.
     .overrides(new TestPasswordStoreModule(passwordStore))
     .injector()
 
