@@ -9,6 +9,7 @@ import services.{BasicAuth, PasswordStore}
 import scala.concurrent.{ExecutionContext, Future}
 
 class AuthAction @Inject() (
+  // We use this for Guice. The actual type we want is BodyParser[A].
   val parser: BodyParsers.Default,
   val passwordStore: PasswordStore
 )(

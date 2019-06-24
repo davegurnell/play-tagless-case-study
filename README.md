@@ -14,34 +14,10 @@ There are two way to do this: using Guice or using manual DI.
 ## Integrating Finally Tagless Modules with Play using Guice
 
 Guice doesn't understand higher hinded type parameters,
-so it doesn't support injection of tagless style components:
+so it doesn't support injection of tagless style components.
+Let's see this for ourselves then work out what to do about it!
 
-```scala
-trait Component[F[_]] {
-  def doStuff: F[Unit]
-}
-
-class GenericComponent[F[_]: Monad] extends Component[F] {
-  def doStuff: F[Unit] = ().pure[F]
-}
-
-// This doesn't work!
-class ProductionController @Inject() (component: Component[Future])
-```
-
-To work around this, we create
-a parameterless trait and depend on that whenever we use Guice:
-
-```scala
-trait AsyncComponent extends Component[Future]
-
-class ProductionComponent extends GenericComponent[Future] with AsyncComponent
-
-// We can inject ProductionComponent just fine:
-class ProductionController @Inject() (component: AsyncComponent)
-```
-
-Modify the `PasswordStore` example in this repo in this style:
+Convert the `PasswordStore` example in this repo to finally tagless style:
 
 1. Convert `PasswordStore` to finally tagless style
    like we did in the [previous case study](https://github.com/davegurnell/tagless-case-study)
