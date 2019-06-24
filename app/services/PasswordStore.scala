@@ -1,29 +1,37 @@
 package services
 
 import akka.actor.ActorSystem
-import com.google.inject.AbstractModule
+import cats.Applicative
+import cats.implicits._
+import com.google.inject.{AbstractModule, TypeLiteral}
 import javax.inject.{Inject, Singleton}
 import redis.RedisClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait PasswordStore {
-  def init(passwords: Map[String, String]): Future[Unit]
-  def check(username: String, password: String): Future[Boolean]
+trait PasswordStore[F[_]] {
+  def init(passwords: Map[String, String]): F[Unit]
+  def check(username: String, password: String): F[Boolean]
 }
 
-class InMemoryPasswordStore(var passwords: Map[String, String] = Map.empty) extends PasswordStore {
-  def init(passwords: Map[String, String]): Future[Unit] = {
+trait AsyncPasswordStore extends PasswordStore[Future]
+
+class InMemoryPasswordStore[F[_]: Applicative](
+  var passwords: Map[String, String] = Map.empty
+) extends PasswordStore[F] {
+  def init(passwords: Map[String, String]): F[Unit] = {
     this.passwords = passwords
-    Future.successful(())
+    ().pure[F]
   }
 
-  def check(username: String, password: String): Future[Boolean] =
-    Future.successful(passwords.get(username).fold(false)(_ == password))
+  def check(username: String, password: String): F[Boolean] = {
+    println("InMemoryPasswordStore.check " + username + " " + password + " " + passwords)
+    passwords.get(username).fold(false)(_ == password).pure[F]
+  }
 }
 
 @Singleton
-class RedisPasswordStore @Inject() (implicit system: ActorSystem) extends PasswordStore {
+class RedisPasswordStore @Inject() (implicit system: ActorSystem) extends PasswordStore[Future] with AsyncPasswordStore {
   implicit val ec: ExecutionContext =
     system.dispatcher
 
@@ -38,12 +46,14 @@ class RedisPasswordStore @Inject() (implicit system: ActorSystem) extends Passwo
       .traverse(passwords.toList) { case (k, v) => client.set(keyPrefix + k, v) }
       .map(_ => ())
 
-  def check(username: String, password: String): Future[Boolean] =
+  def check(username: String, password: String): Future[Boolean] = {
+    println("RedisPasswordStore " + username + " " + password)
     client.get[String](keyPrefix + username).map(_.contains(password))
+  }
 }
 
 class PasswordStoreModule extends AbstractModule {
   override def configure(): Unit = {
-    bind(classOf[PasswordStore]).to(classOf[RedisPasswordStore])
+    bind(new TypeLiteral[PasswordStore[Future]] {}).to(classOf[RedisPasswordStore])
   }
 }

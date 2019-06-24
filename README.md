@@ -22,9 +22,7 @@ Convert the `PasswordStore` example in this repo to finally tagless style:
 1. Convert `PasswordStore` to finally tagless style
    like we did in the [previous case study](https://github.com/davegurnell/tagless-case-study)
 
-2. Integrate `PasswordStore` with Guice
-   by creating a concrete subtype that doesn't have any type parameters
-   and injecting that into your controller
+2. Integrate `PasswordStore` with Guice somehow
 
 ## Integrating Finally Tagless Modules with Play using Manual DI Play
 
@@ -32,7 +30,7 @@ Convert the `PasswordStore` example in this repo to finally tagless style:
 Commit your code or switch branches before carrying on!**
 
 Here's an alternate strategy to the one described above.
-Instead of using Guice, we can do manual dependency injection using contstructors:
+Instead of using Guice, we can do manual dependency injection using constructors:
 
 1. Delete the concrete subtype you introduced in step 2 above!
 

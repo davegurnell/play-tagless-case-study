@@ -11,7 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AuthAction @Inject() (
   // We use this for Guice. The actual type we want is BodyParser[A].
   val parser: BodyParsers.Default,
-  val passwordStore: PasswordStore
+  val passwordStore: PasswordStore[Future],
 )(
   implicit val executionContext: ExecutionContext
 ) extends ActionBuilder[AuthRequest, AnyContent] with ActionRefiner[Request, AuthRequest] {
