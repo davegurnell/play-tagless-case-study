@@ -17,29 +17,31 @@ Guice doesn't understand higher hinded type parameters,
 so it doesn't support injection of tagless style components:
 
 ```scala
-trait ComponentApi[F[_]] {
+trait Component[F[_]] {
   def doStuff: F[Unit]
 }
 
-class GenericComponent[F[_]: Monad] extends ComponentApi[F] {
+class GenericComponent[F[_]: Monad] extends Component[F] {
   def doStuff: F[Unit] = ().pure[F]
 }
 
 // This doesn't work!
-class ProductionController @Inject() (component: ProductionComponent[Future])
+class ProductionController @Inject() (component: Component[Future])
 ```
 
-To work around this, we create a simplified subtype of each component we want to inject:
+To work around this, we create
+a parameterless trait and depend on that whenever we use Guice:
 
 ```scala
-// This class removes the higher kinded type type parameter from GenericComponent:
-class ProductionComponent extends GenericComponent[Future]
+trait AsyncComponent extends Component[Future]
+
+class ProductionComponent extends GenericComponent[Future] with AsyncComponent
 
 // We can inject ProductionComponent just fine:
-class ProductionController @Inject() (component: ProductionComponent)
+class ProductionController @Inject() (component: AsyncComponent)
 ```
 
-Now, nodify the `PasswordStore` example in this repo in this style:
+Modify the `PasswordStore` example in this repo in this style:
 
 1. Convert `PasswordStore` to finally tagless style
    like we did in the [previous case study](https://github.com/davegurnell/tagless-case-study)
