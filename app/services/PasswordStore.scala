@@ -22,12 +22,12 @@ class InMemoryPasswordStore[F[_]: Applicative](var passwords: Map[String, String
     passwords.get(username).fold(false)(_ == password).pure[F]
 }
 
-class RedisPasswordStore(implicit system: ActorSystem) extends PasswordStore[Future] {
+class RedisPasswordStore(system: ActorSystem) extends PasswordStore[Future] {
   implicit val ec: ExecutionContext =
     system.dispatcher
 
   private val client: RedisClient =
-    RedisClient()
+    RedisClient()(system)
 
   private val keyPrefix: String =
     "taglessdemo:"

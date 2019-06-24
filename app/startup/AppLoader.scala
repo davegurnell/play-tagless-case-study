@@ -29,13 +29,14 @@ class AppLoader extends ApplicationLoader {
 }
 
 class StartupModule(context: ApplicationLoader.Context) extends BuiltInComponentsFromContext(context) {
+  import com.softwaremill.macwire._
+
   val httpFilters: Seq[EssentialFilter] =
     Seq.empty
 
-  lazy val passwordStore = new InMemoryPasswordStore[Future]()
-  lazy val bodyParser    = new BodyParsers.Default(playBodyParsers)
-  lazy val authAction    = new AuthAction(bodyParser, passwordStore)
-  lazy val appController = new AppController(controllerComponents, authAction)
+  lazy val passwordStore = wire[RedisPasswordStore]
+  lazy val authAction    = wire[AuthAction]
+  lazy val appController = wire[AppController]
 
   val router: Router = new Routes(
     httpErrorHandler,

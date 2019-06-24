@@ -33,9 +33,10 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.typelevel"          %% "cats-core"          % "1.4.0",
-  "com.github.etaty"       %% "rediscala"          % "1.8.0",
-  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test,
+  "org.typelevel"            %% "cats-core"          % "1.4.0",
+  "com.github.etaty"         %% "rediscala"          % "1.8.0",
+  "com.softwaremill.macwire" %% "macros"             % "2.3.3",
+  "org.scalatestplus.play"   %% "scalatestplus-play" % "4.0.1" % Test,
 )
 
 routesImport ++= Seq(
